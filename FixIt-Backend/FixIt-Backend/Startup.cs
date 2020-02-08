@@ -12,6 +12,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using FixIt_Backend.Context;
+using Microsoft.OpenApi.Models;
 
 namespace FixIt_Backend
 {
@@ -29,9 +30,23 @@ namespace FixIt_Backend
         {
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
 
+           
             var connectionString = Configuration.GetConnectionString("DefaultConnection");
             services.AddDbContext<DataContext>(options => options.UseSqlServer(
                 connectionString));
+
+            services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new OpenApiInfo
+                { Title = "Fix It",
+                  Description = "Fix It API.",
+                  Contact=new OpenApiContact
+                  {
+                      Name = "Prakash",
+                      Email="prakash.timalsina@selu.edu"
+                  },
+                  Version = "v1" });
+            });
 
         }
 
@@ -47,7 +62,14 @@ namespace FixIt_Backend
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
-
+            var swaggerEndPoint = Configuration["SwaggerEndPoint"];
+            var swaggerUiEndPoint = Configuration["SwaggerUIEndPoint"];
+            app.UseSwagger();
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint(swaggerEndPoint, "Fix It V1.0");
+                c.RoutePrefix = swaggerUiEndPoint;
+            });
             app.UseHttpsRedirection();
             app.UseMvc();
         }
